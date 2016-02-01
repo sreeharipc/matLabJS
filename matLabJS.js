@@ -194,28 +194,29 @@
 		this.chart = setUpchart(x,y_array,this.context);
 
 	}
-	function log(m)
-	{
-		console.log(m);
-	}
+	
 
 	//fft implimentation
 	matLab.prototype.fft = function(frame,nfft)
 	{
+		//pad zeros if not equal length
+		var frlen=frame.length;
+		if(frlen!=nfft)
+		{
+			frame = frame.concat(this.zeros(nfft-frlen))
+		}
+		//frame is complex array or not,if not make it complex. 
+		if(typeof(frame[0])=="number")
+		{
+			frame = this.complexarray(frame);
+		}
+
 		var stages = Math.log2(nfft); //num stages
-
-		log('stages = '+stages);
-
 		var z = this.bitRevIndices(nfft,stages,frame); //bitreversed complex array
-
-		log(z);
-
 		var twiddles = this.twiddle(nfft,0,true); //twiddle factors complex  array
-		log('twiddles');
-		log(twiddles);
-
 		var stwI=[],y=[]; //stage twiddle factor indices
 		var p,ind;
+
 		for(var m=1;m<=stages;m++)
 		{
 			p = Math.pow(2,m);
@@ -224,47 +225,32 @@
 					return nfft*val/p; // N*t/2^m
 				});
 			ind = stwI;
-			log('indices staged');
-			log(ind);
-			log(stwI.length);
-		
-
-			for(var p=stwI.length;p<nfft/2;p = stwI.length)
+			
+			for(var q=stwI.length;q<nfft/2;q = stwI.length)
 			{
 				stwI = stwI.concat(ind);
 			}
-
 			
 			for(var k=0,i=0;k<nfft;k++)
 			{
 				if(y[k]==null)
 				{
+
 					temp = computefly(z[k],z[k+(p/2)],twiddles[stwI[i]],this); //seperation in each stage is 0,2,4,8,16
 					y[k] = temp[0];
 					y[k+(p/2)] = temp[1];
 					i++;
-					log('temp');
-					log(temp);
 				}
 			}
 			z=y;
-			log('z');
-			log(z);
 			y=[];
-			
-
 		}
 
 		return z;
 
 	}
 
-	function computefly(a,b,tw,cnt)
-	{
 	
-		var d = cnt.scalarmult(b,-1);
-		return [cnt.complexadd(a,cnt.complexmult(b,tw)),cnt.complexadd(a,(cnt.complexmult(d,tw)))];
-	}
 
 
 	//butterworth filter 
@@ -273,6 +259,10 @@
 
 	}
 	
+	matLab.prototype.filter = function()
+	{
+
+	}
 
 	//return bitreversed complex array
 	matLab.prototype.bitRevIndices = function(num,stages,frame)
@@ -290,7 +280,7 @@
 			});
 	}
 
-	//absolute value of complex number array
+	//absolute value of complex number array [[],[]]
 	matLab.prototype.complexabs = function(carray)
 	{
 		return carray.map(function(val)
@@ -299,8 +289,9 @@
 			});
 	}
 
+	
 
-	//basic complex number addition
+	//basic complex number addition []+[]
 	matLab.prototype.complexadd = function(c1,c2)
 	{
 		
@@ -309,7 +300,7 @@
 				];
 	}
 
-	//basic complex number multipilication
+	//basic complex number multipilication []*[]
 	matLab.prototype.complexmult = function(c1,c2)
 	{
 
@@ -319,7 +310,7 @@
 				];
 	}
 
-
+	//array scalar multiplication []*k
 	matLab.prototype.scalarmult = function(array,k)
 	{
 		return array.map(function(val)
@@ -367,7 +358,22 @@
 		
 	}
 
-	//private functions
+	/**private functions 
+	used as utility for other public functions**/
+
+
+	function computefly(a,b,tw,cnt)
+	{
+	
+		var d = cnt.scalarmult(b,-1);
+		return [cnt.complexadd(a,cnt.complexmult(b,tw)),cnt.complexadd(a,(cnt.complexmult(d,tw)))];
+	}
+
+	function log(m)
+	{
+		console.log(m);
+	}
+
 	function setUpchart(x,y,context)
 	{
 		var data = 	{
@@ -376,8 +382,8 @@
 		    			[
 		        			{
 			            		fillColor: "rgba(220,220,220,0.2)",
-					            strokeColor: "rgba(220,220,220,1)",
-					            pointColor: "rgba(220,220,220,1)",
+					            strokeColor: "rgba(250,120,120,1)",
+					            pointColor: "rgba(60,60,60,0.6)",
 					            pointStrokeColor: "#fff",
 					            pointHighlightFill: "#fff",
 					            pointHighlightStroke: "rgba(220,220,220,1)",
@@ -389,7 +395,9 @@
 		{
 			tooltipEvents:[],
 			showTooltips: false,
-			responsive:true
+			responsive:true,
+			pointDot:false,
+			
 			
 		};
 		var chart = new Chart(context).Line(data,options);
