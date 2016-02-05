@@ -1,6 +1,10 @@
 
 
-
+/**
+* @file implements few matlab signal processing functions
+* @author Sreehari p c 
+* @version 0.1
+*/
 (function()
 {
 
@@ -15,6 +19,7 @@
 
 	
 	/**
+	 * @class matLab 
 	 * constructer for matLab
 	 * @param  {object} opts contains context of canvas
 	 */
@@ -30,8 +35,9 @@
 	//////////////////////
 	//private functions //
 	//////////////////////
-
+	
 	/**
+	 * 
 	 * finds sign of elements in array
 	 * @param  {object} array array of numbers
 	 * @return {object}       array containing -1,1 or 0
@@ -459,7 +465,7 @@
 		
 		var ifft = this.ifft(cfft,N);
 		ifft = ifft.splice(0,olen);
-		return [cfft,ifft];
+		return ifft;
 
 	}
 	
